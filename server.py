@@ -10,17 +10,22 @@ usb.timeout = .2
 
 @api.route("/<int:address>/<int:red>/<int:green>/<int:blue>")
 def set_led(address, red, green, blue):
-    set_led(int(address), int(red), int(green), int(blue))
+    set_led(int(address), int(red), int(green), int(blue), 0)
     return "done!"
 
-def set_led(address, red, green, blue):
+@api.route("/<int:address>/<int:red>/<int:green>/<int:blue>/<int:duration>")
+def transition_led(address, red, green, blue, duration):
+    set_led(int(address), int(red), int(green), int(blue), int(duration))
+    return "done!"
+
+def set_led(address, red, green, blue, duration):
     ackd = False
     # try writing until the microcontroller sends an ACK
     # message back on the serial line
     while not ackd:
 
         #message format: <led_address:2-byte-int><red:2-byte-int><green:2-byte-int><blue:2-byte-int><intensity:2-byte-int>
-        msg = struct.pack('4H', address, red, green ,blue)
+        msg = struct.pack('5H', address, red, green ,blue, duration)
         usb.write(msg)
         ack_msg = usb.readline()
         if b'ACK' in ack_msg:
